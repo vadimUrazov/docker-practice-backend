@@ -1,0 +1,43 @@
+version: '3.3'
+services:
+  app:
+    build:
+      context: ../../
+      dockerfile: ./ops-tools/docker/images/app/Dockerfile
+    command: sh -c "mvn package; java -jar target/docker-practice-java-0.0.1-SNAPSHOT.jar"
+    volumes:
+      - ../../:/app
+    networks:
+      - docker-practice-net
+    ports:
+      - "8888:8080"
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:13.1-alpine
+    restart: always
+    volumes:
+      - ../../data/postgres:/var/lib/postgresql/data
+      - ../../data/dump:/db-dump
+    networks:
+      - docker-practice-net
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=school
+      - POSTGRES_DB=school
+
+  redis:
+    image: redis:6.0.9-alpine
+    volumes:
+      - ../../data/redis:/var/lib/redis/data
+    networks:
+      - docker-practice-net
+    ports:
+      - "6379:6379"
+
+networks:
+  docker-practice-net:
